@@ -19,9 +19,9 @@ public class ResourceResolver {
         String path = resource.replaceAll("\\.", "/");
         URL result = flatResource2Url(path, locale);
         if (result == null) {
-            result = flatResource2Url("/" + resource, locale);
+            result = flatResource2Url("/" + path, locale);
         }
-        // developement
+        // developement ???
         if (result == null) {
             result = flatResource2Url("./src/main/resources/" + resource, locale);
         }
@@ -46,7 +46,19 @@ public class ResourceResolver {
                 String lang = locale.getLanguage();
                 if (!"en".equals(lang)) {
                     result = from(resource + "_" + locale.getLanguage() + ".properties");
+                } else {
+                    result = from(resource + ".properties");
                 }
+            }
+        }
+        // fallback to default locale
+        Locale dft = Locale.getDefault();
+        if (result == null) {
+            if (!"".equals(locale.getCountry())) {
+                result = from(resource + "_" + dft.toString());
+            }
+            if (result == null) {
+                result = from(resource + "_" + dft.getLanguage());
             }
         }
         if (result == null) {

@@ -37,13 +37,20 @@ public class ResourceResolver {
     private URL flatResource2Url(String resource, Locale locale) {
         URL result = null;
         if (locale != null) {
-            result = from(resource + "_" + locale.toString() + ".properties");
+            if (!"".equals(locale.getCountry())) {
+                result = from(resource + "_" + locale.toString() + ".properties");
+            }
             if (result == null) {
-                result = from(resource + "_" + locale.getLanguage() + ".properties");
+                // in epubcheck it is convention to have an empty *_en.properties file
+                // because english is contained in the (default) *.properties files
+                String lang = locale.getLanguage();
+                if (!"en".equals(lang)) {
+                    result = from(resource + "_" + locale.getLanguage() + ".properties");
+                }
             }
         }
         if (result == null) {
-            result = from(resource);
+            result = from(resource + ".properties");
         }
         return result;
     }

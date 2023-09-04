@@ -35,6 +35,8 @@ import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.ResourceBundle.Control;
 
+import com.adobe.epubcheck.messages.LocalizedMessages;
+import com.adobe.epubcheck.messages.ResourceResolver;
 import com.google.common.base.Charsets;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
@@ -95,7 +97,8 @@ public class Messages
       {
         if (instance == null) 
         {
-          instance = new Messages(locale, bundleKey);
+          // ???
+          instance = new Messages(locale, bundleKey, null);
           messageTable.put(bundleKey, locale, instance);
         }
       }
@@ -118,13 +121,26 @@ public class Messages
   
   protected Messages(Locale locale)
   {
-    this(locale, BUNDLE_NAME);
+    // ???
+    this(locale, BUNDLE_NAME, null);
   }
 
-  protected Messages(Locale locale, String bundleName)
+  protected Messages(Locale locale, String bundleName, ResourceBundle.Control control)
   {
-      this.locale = (locale != null) ? locale : Locale.getDefault();
-    this.bundle = ResourceBundle.getBundle(bundleName, this.locale, new UTF8Control());
+    this.locale = (locale != null) ? locale : Locale.getDefault();
+    if (control != null) {
+      // new UTF8Control()
+      this.bundle = ResourceBundle.getBundle(bundleName, this.locale, control);
+    }
+    else
+    {
+      URL url = ResourceResolver.getInstance().resource2Url(bundleName, this.locale);
+      try {
+        this.bundle = new PropertyResourceBundle(new InputStreamReader(url.openStream(), "utf-8"));
+      } catch (IOException e) {
+        throw new IllegalStateException(e);
+      }
+    }
   }
 
   public String get(String key)

@@ -66,7 +66,8 @@ public class LocalizedMessages
       {
         if (instance == null)
         {
-          instance = new LocalizedMessages(locale);
+          // ???
+          instance = new LocalizedMessages(locale, null);
           localizedMessages.put(localeKey, instance);
         }
       }
@@ -107,11 +108,25 @@ public class LocalizedMessages
    * direct instantiation is also an option using this constructor.
    * @param locale The locale used to localize the messages, or default.
    */
-  public LocalizedMessages(Locale locale)
+  public LocalizedMessages(Locale locale, ResourceBundle.Control control)
   {
     this.locale = (locale != null) ? locale : Locale.getDefault();
-    bundle = ResourceBundle.getBundle(
-      "com.adobe.epubcheck.messages.MessageBundle", this.locale, new LocalizedMessages.UTF8Control());
+    if (control != null) {
+      // new LocalizedMessages.UTF8Control()
+      bundle = ResourceBundle.getBundle(
+              "com.adobe.epubcheck.messages.MessageBundle", this.locale, control);
+    }
+    else
+    {
+      // bundle = ResourceBundle.getBundle(
+      //         "com.adobe.epubcheck.messages.MessageBundle", this.locale);
+      URL url = ResourceResolver.getInstance().resource2Url("com.adobe.epubcheck.messages.MessageBundle", locale);
+      try {
+        this.bundle = new PropertyResourceBundle(new InputStreamReader(url.openStream(), "utf-8"));
+      } catch (IOException e) {
+        throw new IllegalStateException(e);
+      }
+    }
   }
 
   private String getStringFromBundle(String id)

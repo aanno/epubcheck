@@ -136,7 +136,8 @@ public class Messages
     {
       URL url = ResourceResolver.getInstance().resource2Url(bundleName, this.locale);
       try {
-        this.bundle = new PropertyResourceBundle(new InputStreamReader(url.openStream(), "utf-8"));
+        this.bundle = new PropertyResourceBundle(new BufferedReader(
+                new InputStreamReader(url.openStream(), Charsets.UTF_8)));
       } catch (IOException e) {
         throw new IllegalStateException(e);
       }

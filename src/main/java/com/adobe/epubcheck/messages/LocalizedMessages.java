@@ -122,7 +122,8 @@ public class LocalizedMessages
       //         "com.adobe.epubcheck.messages.MessageBundle", this.locale);
       URL url = ResourceResolver.getInstance().resource2Url("com.adobe.epubcheck.messages.MessageBundle", locale);
       try {
-        this.bundle = new PropertyResourceBundle(new InputStreamReader(url.openStream(), "utf-8"));
+        this.bundle = new PropertyResourceBundle(new BufferedReader(
+                new InputStreamReader(url.openStream(), Charsets.UTF_8)));
       } catch (IOException e) {
         throw new IllegalStateException(e);
       }

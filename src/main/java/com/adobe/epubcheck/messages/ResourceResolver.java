@@ -20,7 +20,7 @@ public class ResourceResolver {
                     new InputStreamReader(url.openStream(), Charsets.UTF_8)));
         }
 
-        public void setMyParent(MyPropertyResourceBundle resourceBundle){
+        void setMyParent(MyPropertyResourceBundle resourceBundle){
             setParent(resourceBundle);
         }
 
@@ -40,10 +40,6 @@ public class ResourceResolver {
         List<URL> result = flatResource2Url(path, locale);
         if (result.isEmpty()) {
             result = flatResource2Url("/" + path, locale);
-        }
-        // developement ???
-        if (result.isEmpty()) {
-            result = flatResource2Url("./src/main/resources/" + resource, locale);
         }
         if (result.isEmpty()) {
             result = flatResource2Url(resource, locale);

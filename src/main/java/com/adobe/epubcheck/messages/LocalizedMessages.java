@@ -67,7 +67,7 @@ public class LocalizedMessages
         if (instance == null)
         {
           // ???
-          instance = new LocalizedMessages(locale, null);
+          instance = new LocalizedMessages(locale);
           localizedMessages.put(localeKey, instance);
         }
       }
@@ -108,22 +108,14 @@ public class LocalizedMessages
    * direct instantiation is also an option using this constructor.
    * @param locale The locale used to localize the messages, or default.
    */
-  public LocalizedMessages(Locale locale, ResourceBundle.Control control)
+  public LocalizedMessages(Locale locale)
   {
     this.locale = (locale != null) ? locale : Locale.getDefault();
-    if (control != null) {
-      // new LocalizedMessages.UTF8Control()
-      bundle = ResourceBundle.getBundle(
-              "com.adobe.epubcheck.messages.MessageBundle", this.locale, control);
-    }
-    else
-    {
-      try {
-        this.bundle = ResourceResolver.toResourceBundle(ResourceResolver.getInstance()
-                .resource2Url("com.adobe.epubcheck.messages.MessageBundle", locale));
-      } catch (IOException e) {
-        throw new IllegalStateException(e);
-      }
+    try {
+      this.bundle = ResourceResolver.toResourceBundle(ResourceResolver.getInstance()
+              .resource2Url("com.adobe.epubcheck.messages.MessageBundle", locale));
+    } catch (IOException e) {
+      throw new IllegalStateException(e);
     }
   }
 
@@ -183,54 +175,4 @@ public class LocalizedMessages
             : getSuggestion(id));
   }
 
-  public static class UTF8Control extends ResourceBundle.Control
-  {
-
-    @Override
-    public ResourceBundle newBundle(
-            String baseName,
-            Locale locale,
-            String format,
-            ClassLoader loader,
-            boolean reload) throws IllegalAccessException,
-            InstantiationException,
-            IOException
-    {
-      // The below is a copy of the default implementation.
-      String bundleName = toBundleName(baseName, locale);
-      String resourceName = toResourceName(bundleName, "properties"); //$NON-NLS-1$
-      ResourceBundle bundle = null;
-      InputStream stream = null;
-      if (reload)
-      {
-        URL url = loader.getResource(resourceName);
-        if (url != null)
-        {
-          URLConnection connection = url.openConnection();
-          if (connection != null)
-          {
-            connection.setUseCaches(false);
-            stream = connection.getInputStream();
-          }
-        }
-      } else
-      {
-        stream = loader.getResourceAsStream(resourceName);
-      }
-      if (stream != null)
-      {
-        try
-        {
-          // Only this line is changed to make it to read properties files as
-          // UTF-8.
-          bundle = new PropertyResourceBundle(
-                  new BufferedReader(new InputStreamReader(stream, Charsets.UTF_8)));
-        } finally
-        {
-          stream.close();
-        }
-      }
-      return bundle;
-    }
-  }
 }

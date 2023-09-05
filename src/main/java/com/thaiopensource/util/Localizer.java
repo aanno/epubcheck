@@ -56,11 +56,14 @@ public class Localizer
     {
       String s = cls.getName();
       int i = s.lastIndexOf('.');
-      if (i > 0) s = s.substring(0, i + 1);
+      if (i > 0) {
+        s = s.substring(0, i + 1);
+      }
       else
-	s = "";
-      bundles.put(locale, ResourceBundle.getBundle(s + "resources.Messages", LocaleHolder.get(),
-          new LocalizedMessages.UTF8Control()));
+      {
+        s = "";
+      }
+      bundles.put(locale, ResourceBundle.getBundle(s + "resources.Messages", LocaleHolder.get()));
     }
     return bundles.get(locale);
   }

@@ -1,10 +1,30 @@
 package com.adobe.epubcheck.messages;
 
-import java.io.File;
+import com.google.common.base.Charsets;
+import com.google.common.collect.Lists;
+
+import java.io.*;
 import java.net.URL;
-import java.util.Locale;
+import java.util.*;
 
 public class ResourceResolver {
+
+    private static class MyPropertyResourceBundle extends PropertyResourceBundle {
+
+        MyPropertyResourceBundle(Reader reader) throws IOException {
+            super(reader);
+        }
+
+        MyPropertyResourceBundle(URL url) throws IOException {
+            this(new BufferedReader(
+                    new InputStreamReader(url.openStream(), Charsets.UTF_8)));
+        }
+
+        public void setMyParent(MyPropertyResourceBundle resourceBundle){
+            setParent(resourceBundle);
+        }
+
+    }
 
     private static final ResourceResolver INSTANCE = new ResourceResolver();
 
@@ -15,56 +35,58 @@ public class ResourceResolver {
     private ResourceResolver() {
     }
 
-    public URL resource2Url(String resource, Locale locale) {
+    public List<URL> resource2Url(String resource, Locale locale) {
         String path = resource.replaceAll("\\.", "/");
-        URL result = flatResource2Url(path, locale);
-        if (result == null) {
+        List<URL> result = flatResource2Url(path, locale);
+        if (result.isEmpty()) {
             result = flatResource2Url("/" + path, locale);
         }
         // developement ???
-        if (result == null) {
+        if (result.isEmpty()) {
             result = flatResource2Url("./src/main/resources/" + resource, locale);
         }
-        if (result == null) {
+        if (result.isEmpty()) {
             result = flatResource2Url(resource, locale);
         }
-        if (result == null) {
+        if (result.isEmpty()) {
             throw new IllegalArgumentException("Can't find resource for " + resource + " and " + locale);
         }
         return result;
     }
 
-    private URL flatResource2Url(String resource, Locale locale) {
-        URL result = null;
+    private List<URL> flatResource2Url(String resource, Locale locale) {
+        final List<URL> result = new ArrayList<>();
         if (locale != null) {
             if (!"".equals(locale.getCountry())) {
-                result = from(resource + "_" + locale.toString() + ".properties");
+                addTo(result, from(resource + "_" + locale.toString() + ".properties"));
             }
-            if (result == null) {
-                // in epubcheck it is convention to have an empty *_en.properties file
-                // because english is contained in the (default) *.properties files
-                String lang = locale.getLanguage();
-                if (!"en".equals(lang)) {
-                    result = from(resource + "_" + locale.getLanguage() + ".properties");
-                } else {
-                    result = from(resource + ".properties");
-                }
+            final String lang = locale.getLanguage();
+            if (!"".equals(lang)) {
+                addTo(result, from(resource + "_" + locale.getLanguage() + ".properties"));
             }
         }
-        // fallback to default locale
+        // fallback to default locale (only if locale not found)
         Locale dft = Locale.getDefault();
-        if (result == null) {
+        if (result.isEmpty()) {
             if (!"".equals(locale.getCountry())) {
-                result = from(resource + "_" + dft.toString());
+                addTo(result, from(resource + "_" + dft.toString() + ".properties"));
             }
-            if (result == null) {
-                result = from(resource + "_" + dft.getLanguage());
+            final String lang2 = dft.getLanguage();
+            if (!"".equals(lang2)) {
+                addTo(result, from(resource + "_" + lang2 + ".properties"));
             }
         }
-        if (result == null) {
-            result = from(resource + ".properties");
-        }
+        // fallback to default bundle (uncondionally)
+        addTo(result, from(resource + ".properties"));
         return result;
+    }
+
+    private static void addTo(List<URL> list, URL toAdd) {
+        if (toAdd != null) {
+            if (!list.contains(toAdd)) {
+                list.add(toAdd);
+            }
+        }
     }
 
     private URL from(String resourceName) {
@@ -72,11 +94,23 @@ public class ResourceResolver {
         if (cl == null) {
             cl = ResourceResolver.class.getClassLoader();
         }
-        /*
         if (cl == null) {
-            cl = ClassLoader.getPlatformClassLoader();
+            cl = ClassLoader.getSystemClassLoader();
         }
-         */
         return cl.getResource(resourceName);
+    }
+
+    public static PropertyResourceBundle toResourceBundle(List<URL> list) throws IOException {
+        MyPropertyResourceBundle result = null;
+        URL url = null;
+        for (Iterator<URL> it = Lists.reverse(list).iterator(); it.hasNext();) {
+            url = it.next();
+            MyPropertyResourceBundle last = result;
+            result = new MyPropertyResourceBundle(url);
+            if (last != null) {
+                result.setMyParent(last);
+            }
+        }
+        return result;
     }
 }

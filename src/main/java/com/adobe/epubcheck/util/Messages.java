@@ -134,10 +134,9 @@ public class Messages
     }
     else
     {
-      URL url = ResourceResolver.getInstance().resource2Url(bundleName, this.locale);
       try {
-        this.bundle = new PropertyResourceBundle(new BufferedReader(
-                new InputStreamReader(url.openStream(), Charsets.UTF_8)));
+        this.bundle = ResourceResolver.toResourceBundle(
+                ResourceResolver.getInstance().resource2Url(bundleName, this.locale));
       } catch (IOException e) {
         throw new IllegalStateException(e);
       }

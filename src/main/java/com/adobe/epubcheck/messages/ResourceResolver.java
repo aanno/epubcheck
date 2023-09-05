@@ -45,7 +45,7 @@ public class ResourceResolver {
             result = flatResource2Url(resource, locale);
         }
         if (result.isEmpty()) {
-            throw new IllegalArgumentException("Can't find resource for " + resource + " and " + locale);
+            throw new IllegalStateException("Can't find resource for " + resource + " and " + locale);
         }
         return result;
     }

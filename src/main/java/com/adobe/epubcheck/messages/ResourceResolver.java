@@ -72,7 +72,7 @@ public class ResourceResolver {
                 addTo(result, from(resource + "_" + lang2 + ".properties"));
             }
         }
-        // fallback to default bundle (uncondionally)
+        // fallback to default bundle (unconditionally)
         addTo(result, from(resource + ".properties"));
         return result;
     }
@@ -98,10 +98,8 @@ public class ResourceResolver {
 
     public static PropertyResourceBundle toResourceBundle(List<URL> list) throws IOException {
         MyPropertyResourceBundle result = null;
-        URL url = null;
-        for (Iterator<URL> it = Lists.reverse(list).iterator(); it.hasNext();) {
-            url = it.next();
-            MyPropertyResourceBundle last = result;
+        for (URL url : Lists.reverse(list)) {
+            final MyPropertyResourceBundle last = result;
             result = new MyPropertyResourceBundle(url);
             if (last != null) {
                 result.setMyParent(last);
